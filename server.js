@@ -14,10 +14,11 @@ app.use(cors());
 
 app.get('/api/weather', async (req, res) => {
     // Get the city from query parameters, default to 'London' if not provided
-    const city = req.query.city || 'London'
+    const city = req.query.q || 'London'
+    const units = req.query.units || 'metric' // Default to metric if not provided
 
     try {
-        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`)
+        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=${units}`)
         res.json(response.data)
     } catch (error) {
         console.error('Error fetching weather data:', error)
