@@ -24,7 +24,7 @@ function App() {
       })
       .then(data => {
         setWeather(data);
-        updateEmoji(data.weather[0].description);  // Set emoji when data is fetched
+        updateEmoji(data.list[0].weather[0].description);  // Set emoji when data is fetched
         if (unit === 'metric') {
           setTempUnit('Cº');
         } else {
@@ -142,9 +142,25 @@ function App() {
         <div className="card">
           {weather ? (
             <div className="weather-info">
-              <h2>{weather.name}</h2>
-              <p>Temperature: {weather.main.temp} {tempUnit}</p>
-              <p>Weather: {weather.weather[0].description} {emoji}</p>
+              <h2>{weather.city.name}, {weather.city.country}</h2>
+              {/* Loop through 3 days of forecast(add 8 each loop due to openweathermap's 3-hour interval data) */}
+              <div className='weather-container'>
+                <div className='weather-box'>
+                  <h3>Current Weather</h3>
+                  <p>{emoji} {weather.list[0].weather[0].description}</p>
+                  <p>Temperature: {weather.list[0].main.temp} {tempUnit}</p>
+                </div>
+                <div className='weather-box'>
+                  <h3>Next 24 Hours</h3>
+                  <p>{emoji} {weather.list[8].weather[0].description}</p>
+                  <p>Temperature: {weather.list[8].main.temp} {tempUnit}</p>
+                </div>
+                <div className='weather-box'>
+                  <h3>Next 48 Hours</h3>
+                  <p>{emoji} {weather.list[16].weather[0].description}</p>
+                  <p>Temperature: {weather.list[16].main.temp} {tempUnit}</p>
+                </div>
+              </div>
             </div>
           ) : (
             <p>Loading weather data...</p>
