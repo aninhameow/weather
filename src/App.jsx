@@ -5,10 +5,17 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [emoji, setEmoji] = useState('');  // Add emoji state
   const [tempUnit, setTempUnit] = useState('Cº'); // Add state for temperature unit
+  const [city, setCity] = useState(''); // Add state for city input
+  const [filteredCities, setFilteredCities] = useState([]);  // State for filtered cities
 
+  // Fetch weather data for the default city (London) on component mount
   useEffect(() => {
-    // Default to fetching weather for London when the app loads
-    fetch(`http://localhost:3001/api/weather?units=metric`)
+    fetchWeather('London', 'metric');
+  }, []);
+
+  
+  const fetchWeather = (cityName, unit) => {
+    fetch(`http://localhost:3001/api/weather?q=${cityName}&units=${unit}`)
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -18,11 +25,16 @@ function App() {
       .then(data => {
         setWeather(data);
         updateEmoji(data.weather[0].description);  // Set emoji when data is fetched
+        if (unit === 'metric') {
+          setTempUnit('Cº');
+        } else {
+          setTempUnit('Fº');
+        }
       })
       .catch(error => {
         console.error('Error fetching weather data:', error);
       });
-  }, []);
+  };
 
   const updateEmoji = (description) => {
     let emoji = '';
@@ -63,44 +75,17 @@ function App() {
     }
     setEmoji(emoji);  // Update the emoji state
   };
-  
 
-  return (
-    <>
-      <h1>Weather App</h1>
-      <label htmlFor="citySelect">Select a city:</label>
-      {/* Input instead of select since openweathermap has too many cities to add them all to the select options */}
-      <div className='Inputs'>
-      <input
-        id="citySelect"
-        type="text"
-        placeholder="Enter city name"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            const selectedTemp = document.querySelector('input[name="temp"]:checked').value;
-            fetch(`http://localhost:3001/api/weather?q=${e.target.value}&units=${selectedTemp}`)
-              .then(response => {
-                if (!response.ok) {
-                  throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-              })
-              .then(data => {
-                setWeather(data);
-                updateEmoji(data.weather[0].description);  // Update emoji when city changes
-              })
-              .then(() => e.target.value = '') // Clear the input after fetching
-              .catch(error => {
-                console.error('Error fetching weather data:', error);
-              });
-          }
-        }}
-      />
-      <div className='tempOps'>
-      <label htmlFor="Celsius">Cº</label>
-      <input type="radio" name="temp" id="celsius" value="metric" defaultChecked onChange={(e) => {
-        console.log(weather.name);
-        fetch(`http://localhost:3001/api/weather?q=${weather.name}&units=${e.target.value}`)
+  // Handle input change and fetch filtered cities from the backend
+  async function handleCityInputChange(e) {
+    const input = e.target.value;
+    setCity(input);
+
+    // Fetch filtered cities based on the user's input
+    if (input.trim() === '') {
+      setFilteredCities([]);
+    } else {
+      fetch(`http://localhost:3001/api/citylist?search=${input}`)
         .then(response => {
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -108,44 +93,63 @@ function App() {
           return response.json();
         })
         .then(data => {
-          setWeather(data);
-          updateEmoji(data.weather[0].description);  // Update emoji when unit changes
+          setFilteredCities(data); // Update filtered cities based on the backend response
         })
-        .then(() => setTempUnit("Cº")) // Update temperature unit after fetching so that it doesn't change before the data is fetched
         .catch(error => {
-          console.error('Error fetching weather data:', error);
+          console.error('Error fetching filtered cities:', error);
         });
-      }} />
-      <label htmlFor="Fahrenheit">Fº</label>
-      <input type="radio" name="temp" id="fahrenheit" value="imperial" onChange={(e) => {
-        fetch(`http://localhost:3001/api/weather?q=${weather.name}&units=${e.target.value}`)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            setWeather(data);
-            updateEmoji(data.weather[0].description);  // Update emoji when unit changes
-          })
-          .then(() => setTempUnit("Fº"))
-          .catch(error => {
-            console.error('Error fetching weather data:', error);
-          });
-      }} />
-      </div>
-      <div className="card">
-        {weather ? (
-          <div className="weather-info">
-            <h2>{weather.name}</h2>
-            <p>Temperature: {weather.main.temp} {tempUnit}</p>
-            <p>Weather: {weather.weather[0].description} {emoji}</p>
-          </div>
-        ) : (
-          <p>Loading weather data...</p>
-        )}
-      </div>
+    }
+  };
+
+  // Handle Enter key press to fetch weather data for the selected city
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && city.trim() !== '') {
+      fetchWeather(city, tempUnit === 'Cº' ? 'metric' : 'imperial');
+    }
+  };
+
+  return (
+    <>
+      <h1>Weather App</h1>
+      <div className="Inputs">
+        <label htmlFor="citySelect">Select a city:</label>
+        <input
+          id="citySelect"
+          type="text"
+          placeholder="Enter city name"
+          value={city} // Bind the city input to the state
+          onChange={handleCityInputChange} // Filter cities based on input
+          onKeyDown={handleKeyDown} // Call the handleKeyDown function when Enter is pressed
+          list="cities" // Bind the datalist to the input
+        />
+        <datalist id="cities">
+          {filteredCities.map((city, index) => (
+            <option key={index} value={city.trim()} />
+          ))}
+        </datalist>
+
+        <div className='tempOps'>
+          <label htmlFor="Celsius">Cº</label>
+          <input type="radio" name="temp" id="celsius" value="metric" checked={tempUnit === 'Cº'} onChange={() => {
+            fetchWeather(city, 'metric');
+          }} />
+          <label htmlFor="Fahrenheit">Fº</label>
+          <input type="radio" name="temp" id="fahrenheit" value="imperial" checked={tempUnit === 'Fº'} onChange={() => {
+            fetchWeather(city, 'imperial');
+          }} />
+        </div>
+
+        <div className="card">
+          {weather ? (
+            <div className="weather-info">
+              <h2>{weather.name}</h2>
+              <p>Temperature: {weather.main.temp} {tempUnit}</p>
+              <p>Weather: {weather.weather[0].description} {emoji}</p>
+            </div>
+          ) : (
+            <p>Loading weather data...</p>
+          )}
+        </div>
       </div>
     </>
   );
