@@ -147,17 +147,17 @@ function App() {
               <div className='weather-container'>
                 <div className='weather-box'>
                   <h3>Current Weather</h3>
-                  <p>{emoji} {weather.list[0].weather[0].description}</p>
+                  <p className='emoji'>{emoji}</p>  <p>{weather.list[0].weather[0].description}</p>
                   <p>Temperature: {weather.list[0].main.temp} {tempUnit}</p>
                 </div>
                 <div className='weather-box'>
                   <h3>Next 24 Hours</h3>
-                  <p>{emoji} {weather.list[8].weather[0].description}</p>
+                  <p className='emoji'>{emoji}</p>  <p>{weather.list[8].weather[0].description}</p>
                   <p>Temperature: {weather.list[8].main.temp} {tempUnit}</p>
                 </div>
                 <div className='weather-box'>
                   <h3>Next 48 Hours</h3>
-                  <p>{emoji} {weather.list[16].weather[0].description}</p>
+                  <p className='emoji'>{emoji}</p>  <p>{weather.list[16].weather[0].description}</p>
                   <p>Temperature: {weather.list[16].main.temp} {tempUnit}</p>
                 </div>
               </div>

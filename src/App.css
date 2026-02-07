@@ -28,4 +28,11 @@ input[type="text"] {
 
 .weather-box {
   margin: 0 1rem;
+  background-color: #f0f0f0;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.emoji {
+  font-size: 2rem;
 }
