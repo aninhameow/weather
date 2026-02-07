@@ -1,9 +1,55 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+
+const updateEmoji = (description) => {
+    let emoji = '';
+    switch (description) {
+      case 'clear sky':
+        emoji = '☀️';
+        break;
+      case 'overcast clouds':
+        emoji = '☁️';
+        break;
+      case 'scattered clouds':
+        emoji = '🌥️';
+        break;
+      case 'broken clouds':
+        emoji = '⛅';
+        break;
+      case 'few clouds':
+        emoji = '🌤️';
+        break;
+      case 'shower rain':
+        emoji = '🌦️';
+        break;
+      case 'rain':
+        emoji = '🌧️';
+        break;
+      case 'light rain':
+        emoji = '🌦️';
+        break;
+      case 'moderate rain':
+        emoji = '🌧️';
+        break;
+      case 'thunderstorm':
+        emoji = '⛈️';
+        break;
+      case 'snow':
+        emoji = '❄️';
+        break;
+      case 'mist':
+        emoji = '🌫️';
+        break;
+      default:
+        emoji = null;  // Default to no emoji if description doesn't match
+        break;
+    }
+    return emoji;
+  };
+
 function App() {
   const [weather, setWeather] = useState(null);
-  const [emoji, setEmoji] = useState('');  // Add emoji state
   const [tempUnit, setTempUnit] = useState('Cº'); // Add state for temperature unit
   const [city, setCity] = useState(''); // Add state for city input
   const [filteredCities, setFilteredCities] = useState([]);  // State for filtered cities
@@ -12,7 +58,7 @@ function App() {
   useEffect(() => {
     fetchWeather('London', 'metric');
   }, []);
-
+  
   
   const fetchWeather = (cityName, unit) => {
     fetch(`http://localhost:3001/api/weather?q=${cityName}&units=${unit}`)
@@ -34,46 +80,6 @@ function App() {
       .catch(error => {
         console.error('Error fetching weather data:', error);
       });
-  };
-
-  const updateEmoji = (description) => {
-    let emoji = '';
-    switch (description) {
-      case 'clear sky':
-        emoji = '☀️';
-        break;
-      case 'few clouds':
-        emoji = '🌤️';
-        break;
-      case 'overcast clouds':
-        emoji = '☁️';
-        break;
-      case 'scattered clouds':
-        emoji = '☁️';
-        break;
-      case 'broken clouds':
-        emoji = '⛅';
-        break;
-      case 'shower rain':
-        emoji = '🌦️';
-        break;
-      case 'rain':
-        emoji = '🌧️';
-        break;
-      case 'thunderstorm':
-        emoji = '⛈️';
-        break;
-      case 'snow':
-        emoji = '❄️';
-        break;
-      case 'mist':
-        emoji = '🌫️';
-        break;
-      default:
-        emoji = '';  // Default to no emoji if description doesn't match
-        break;
-    }
-    setEmoji(emoji);  // Update the emoji state
   };
 
   // Handle input change and fetch filtered cities from the backend
@@ -145,21 +151,9 @@ function App() {
               <h2>{weather.city.name}, {weather.city.country}</h2>
               {/* Loop through 3 days of forecast(add 8 each loop due to openweathermap's 3-hour interval data) */}
               <div className='weather-container'>
-                <div className='weather-box'>
-                  <h3>Current Weather</h3>
-                  <p className='emoji'>{emoji}</p>  <p>{weather.list[0].weather[0].description}</p>
-                  <p>Temperature: {weather.list[0].main.temp} {tempUnit}</p>
-                </div>
-                <div className='weather-box'>
-                  <h3>Next 24 Hours</h3>
-                  <p className='emoji'>{emoji}</p>  <p>{weather.list[8].weather[0].description}</p>
-                  <p>Temperature: {weather.list[8].main.temp} {tempUnit}</p>
-                </div>
-                <div className='weather-box'>
-                  <h3>Next 48 Hours</h3>
-                  <p className='emoji'>{emoji}</p>  <p>{weather.list[16].weather[0].description}</p>
-                  <p>Temperature: {weather.list[16].main.temp} {tempUnit}</p>
-                </div>
+                {weatherBox(0, weather, tempUnit)}
+                {weatherBox(8, weather, tempUnit)}
+                {weatherBox(16, weather, tempUnit)}
               </div>
             </div>
           ) : (
@@ -172,3 +166,18 @@ function App() {
 }
 
 export default App;
+
+
+export function weatherBox(index, weather, tempUnit) {
+  const description = weather.list[index].weather[0].description;
+  const temperature = weather.list[index].main.temp;
+  const emoji = updateEmoji(description);
+
+  return (
+    <div className="weather-box">
+      <h3>Weather Forecast</h3>
+      <p className='emoji'>{emoji}</p>  <p>{description}</p>
+      <p>Temperature: {temperature} {tempUnit}</p>
+    </div>
+  );
+}

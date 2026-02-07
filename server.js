@@ -16,12 +16,13 @@ app.use(cors());
 app.get('/api/citylist', (req, res) => {
     const search = req.query.search || '';  // Search query from the client
     const filteredCities = cities.filter(city => city.toLowerCase().startsWith(search.toLowerCase()));
-    const limitedCities = filteredCities.slice(0, 2000);  // Limit to the first 200 results
+    const limitedCities = filteredCities.slice(0, 2000);  // Limit to the first 2000 results to prevent overwhelming the client
     res.json(limitedCities);  // Send the filtered list back to the client
 });
 
 // Weather data fetching endpoint
 app.get('/api/weather', async (req, res) => {
+  // Get city and units from query parameters, with defaults
   const city = req.query.q || 'London';
   const units = req.query.units || 'metric';
 
