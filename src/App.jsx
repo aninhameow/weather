@@ -70,7 +70,6 @@ function App() {
       })
       .then(data => {
         setWeather(data);
-        updateEmoji(data.list[0].weather[0].description);  // Set emoji when data is fetched
         if (unit === 'metric') {
           setTempUnit('Cº');
         } else {
